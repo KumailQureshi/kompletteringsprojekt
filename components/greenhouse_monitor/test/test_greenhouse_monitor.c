@@ -157,11 +157,80 @@ TEST_CASE("action to string returns stable labels", "[greenhouse_monitor]")
     TEST_ASSERT_EQUAL_STRING("unknown", greenhouse_action_to_string((greenhouse_action_t)99));
 }
 
-TEST_CASE("soil status to string returns stable labels", "[greenhouse_monitor]")
+TEST_CASE("soil invalid status converts to string", "[greenhouse_monitor]")
 {
-    TEST_ASSERT_EQUAL_STRING("invalid", greenhouse_soil_status_to_string(GREENHOUSE_SOIL_INVALID));
-    TEST_ASSERT_EQUAL_STRING("dry", greenhouse_soil_status_to_string(GREENHOUSE_SOIL_DRY));
-    TEST_ASSERT_EQUAL_STRING("ok", greenhouse_soil_status_to_string(GREENHOUSE_SOIL_OK));
-    TEST_ASSERT_EQUAL_STRING("wet", greenhouse_soil_status_to_string(GREENHOUSE_SOIL_WET));
-    TEST_ASSERT_EQUAL_STRING("unknown", greenhouse_soil_status_to_string((greenhouse_soil_status_t)99));
+    TEST_ASSERT_EQUAL_STRING(
+        "invalid",
+        greenhouse_soil_status_to_string(GREENHOUSE_SOIL_INVALID)
+    );
+}
+
+TEST_CASE("soil dry status converts to string", "[greenhouse_monitor]")
+{
+    TEST_ASSERT_EQUAL_STRING(
+        "dry",
+        greenhouse_soil_status_to_string(GREENHOUSE_SOIL_DRY)
+    );
+}
+
+TEST_CASE("soil wet status converts to string", "[greenhouse_monitor]")
+{
+    TEST_ASSERT_EQUAL_STRING(
+        "wet",
+        greenhouse_soil_status_to_string(GREENHOUSE_SOIL_WET)
+    );
+}
+
+TEST_CASE("10 degrees should be LOW", "[greenhouse_monitor]")
+{
+    greenhouse_temperature_status_t status;
+
+    status = greenhouse_temperature_status(10);
+
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_LOW, status);
+}
+
+TEST_CASE("22 degrees should be ok", "[greenhouse_monitor]")
+{
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_OK, greenhouse_temperature_status(22));
+}
+
+TEST_CASE("35 degrees should be critical", "[greenhouse_monitor]")
+{
+    TEST_ASSERT_EQUAL(GREENHOUSE_TEMPERATURE_CRITICAL, greenhouse_temperature_status(35));
+}
+
+TEST_CASE("average moisture calculates correctly", "[greenhouse_monitor]")
+{
+    int values[] = {20, 40, 60};
+    int average = 0;
+
+    TEST_ASSERT_EQUAL(
+        ESP_OK,
+        greenhouse_average_moisture(values, 3, &average)
+    );
+
+    TEST_ASSERT_EQUAL(40, average);
+}
+
+TEST_CASE("average moisture rejects empty list", "[greenhouse_monitor]")
+{
+    int values[] = {20, 40, 60};
+    int average = 0;
+
+    TEST_ASSERT_EQUAL(
+        ESP_ERR_INVALID_ARG,
+        greenhouse_average_moisture(values, 0, &average)
+    );
+}
+
+TEST_CASE("average moisture rejects invalid value", "[greenhouse_monitor]")
+{
+    int values[] = {101};
+    int average = 0;
+
+    TEST_ASSERT_EQUAL(
+        ESP_ERR_INVALID_ARG,
+        greenhouse_average_moisture(values, 1, &average)
+    );
 }

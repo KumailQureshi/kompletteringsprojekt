@@ -127,6 +127,9 @@ greenhouse_temperature_status_t greenhouse_temperature_status(int temperature)
     else if (temperature <= 34) {
         return GREENHOUSE_TEMPERATURE_HIGH;
     }
+    else if (temperature <= 84) {
+        return GREENHOUSE_TEMPERATURE_CRITICAL;
+    }
     else {
         return GREENHOUSE_TEMPERATURE_INVALID;
     }
