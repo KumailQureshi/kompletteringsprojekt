@@ -112,3 +112,44 @@ const char *greenhouse_soil_status_to_string(greenhouse_soil_status_t status)
         return "unknown";
     }
 }
+
+greenhouse_temperature_status_t greenhouse_temperature_status(int temperature)
+{
+    if (temperature < GREENHOUSE_MIN_TEMP_C || temperature > GREENHOUSE_MAX_TEMP_C) {
+        return GREENHOUSE_TEMPERATURE_INVALID;
+    }
+    else if (temperature < 15) {
+        return GREENHOUSE_TEMPERATURE_LOW;
+    }
+    else if (temperature <= 27) {
+        return GREENHOUSE_TEMPERATURE_OK;
+    }
+    else if (temperature <= 34) {
+        return GREENHOUSE_TEMPERATURE_HIGH;
+    }
+    else if (temperature <= 84) {
+        return GREENHOUSE_TEMPERATURE_CRITICAL;
+    }
+    else {
+        return GREENHOUSE_TEMPERATURE_INVALID;
+    }
+}
+
+esp_err_t greenhouse_average_moisture(const int *values, size_t value_count,
+        int *average_moisture_percent)
+{
+    if (values == NULL || value_count == 0 || average_moisture_percent == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    int sum = 0;
+    for (size_t i = 0; i < value_count; ++i) {
+        if (values[i] < GREENHOUSE_MIN_MOISTURE || values[i] > GREENHOUSE_MAX_MOISTURE) {
+            return ESP_ERR_INVALID_ARG;
+        }
+        sum += values[i];
+    }
+
+    *average_moisture_percent = sum / value_count;
+    return ESP_OK;
+}
